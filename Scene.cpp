@@ -3,6 +3,7 @@
 #include "GL/gl.h"
 #include "shader_loader.hpp"
 #include <iostream>
+#include <string.h>
 
 
 /*
@@ -49,20 +50,35 @@ void Scene::setupGL() {
     glBufferData(GL_UNIFORM_BUFFER, sizeof(Sphere) * MAX_SPHERES, NULL, GL_DYNAMIC_DRAW);
 
     shader_ = LoadShaders(VERT_SHADER, FRAG_SHADER);
+    glUseProgram(shader_);
 
     Sphere s;
-    s.x = 1;
-    s.y = 1;
-    s.z = 1;
+    s.x = 0;
+    s.y = 0;
+    s.z = 5;
     s.r = 1;
-    s.g = 1;
-    s.b = 1;
+    s.g = 0;
+    s.b = 0;
+    s.rad = 2;
     spheres_->push_back(s);
+
+    s.x = .1;
+    s.y = .5;
+    s.z = 4;
+    s.r = 0;
+    s.g = 1;
+    s.b = 0;
+    s.rad = .5;
+    spheres_->push_back(s);
+
 }
 
 void Scene::updateGL() {
     glBindBuffer(GL_UNIFORM_BUFFER, render_buffer_);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Sphere) * spheres_->size(), &(spheres_[0]));
+
+    GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    memcpy(p, &((*spheres_)[0]), sizeof(Sphere) * spheres_->size());
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
 
     GLuint binding_point_index = 0;
     glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, render_buffer_);
@@ -70,7 +86,11 @@ void Scene::updateGL() {
     GLuint spheres = glGetUniformBlockIndex(shader_, "spheres");
     glUniformBlockBinding(shader_, spheres, binding_point_index);    
 
-    glUseProgram(shader_);
+    GLuint numspheres = glGetUniformLocation(shader_, "numspheres");
+    glUniform1i(numspheres, spheres_->size());
+
+    GLuint whratio = glGetUniformLocation(shader_, "whratio");
+    glUniform1f(whratio, ((float) w_) / ((float) h_));
 }
 
 void Scene::drawGL() {
