@@ -8,13 +8,14 @@
 #define VERT_SHADER "shader.vert"
 #define FRAG_SHADER "shader.frag"
 
-#define MAX_SPHERES 100
+#define MAX_SPHERES 256
 
 using namespace std;
 
 typedef struct Sphere {
-    double x, y, z, rad;
-    double r, g, b;
+    float x, y, z, rad;
+    float r, g, b;
+    float light_emit;
 } Sphere;
 
 class Scene {
