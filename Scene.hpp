@@ -29,7 +29,7 @@ public:
     virtual void updateGL();
     virtual void drawGL();
 private:
-    int w_, h_;
+    int w_, h_, t_;
     vector<Sphere> *spheres_;
     GLuint render_buffer_, vertex_buffer_;
     GLuint shader_;

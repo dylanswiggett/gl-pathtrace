@@ -4,6 +4,7 @@
 #include "shader_loader.hpp"
 #include <iostream>
 #include <string.h>
+#include "math.h"
 
 
 /*
@@ -52,24 +53,49 @@ void Scene::setupGL() {
     shader_ = LoadShaders(VERT_SHADER, FRAG_SHADER);
     glUseProgram(shader_);
 
+    // Test spheres
+
     Sphere s;
     s.x = 0;
     s.y = 0;
     s.z = 5;
     s.r = 1;
-    s.g = 0;
-    s.b = 0;
+    s.g = 1;
+    s.b = 1;
     s.rad = 2;
+    s.light_emit = 0;
     spheres_->push_back(s);
 
-    s.x = .1;
-    s.y = .5;
-    s.z = 4;
+    s.x = 1;
+    s.y = 1;
+    s.z = 2;
     s.r = 0;
     s.g = 1;
     s.b = 0;
     s.rad = .5;
+    s.light_emit = 1;
     spheres_->push_back(s);
+
+    s.x = 0;
+    s.y = -20;
+    s.z = 3;
+    s.r = 1;
+    s.g = 1;
+    s.b = 1;
+    s.rad = 18;
+    s.light_emit = 0;
+    spheres_->push_back(s);
+
+    s.x = 0;
+    s.y = 10;
+    s.z = 5;
+    s.r = 1;
+    s.g = .2;
+    s.b = 0;
+    s.rad = 4;
+    s.light_emit = 1;
+    spheres_->push_back(s);
+
 
 }
 
@@ -94,6 +120,16 @@ void Scene::updateGL() {
 }
 
 void Scene::drawGL() {
+    GLuint t = glGetUniformLocation(shader_, "t");
+    glUniform1i(t, ++t_);
+
+    GLuint seed = glGetUniformLocation(shader_, "user_seed");
+    glUniform1f(seed, static_cast<float> (rand()) / static_cast<float> (RAND_MAX));
+
+
+    (*spheres_)[1].y = sin(((float) t_) / 50.0);
+    updateGL();
+
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
     glDrawArrays(GL_TRIANGLES, 0, sizeof(frameShape) / 3 / sizeof(float));
 }
