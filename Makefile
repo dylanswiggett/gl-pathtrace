@@ -1,6 +1,6 @@
 CXX = g++
 LINKERS = -lSDL2 -lGLEW -lGL
-FLAGS = -Wall -g -std=c++11
+FLAGS = -Wall -g -std=c++11 -DUSE_MESA=ON
 LIBS = main Scene shader_loader
 
 main: $(foreach file, $(LIBS), $(file).o)

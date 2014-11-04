@@ -9,7 +9,7 @@
 #define SDL_WIDTH 1400
 #define SDL_HEIGHT 800
 #define OPENGL_MAJOR_VERSION 3
-#define OPENGL_MINOR_VERSION 3
+#define OPENGL_MINOR_VERSION 1
 
 using namespace std;
 
@@ -82,6 +82,8 @@ int main(int argc, char **argv) {
 	scene->drawGL();
 
 	SDL_GL_SwapWindow(window);
+
+	//	SDL_Delay(10.0f);
     }
 
 

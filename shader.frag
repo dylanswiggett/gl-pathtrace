@@ -20,13 +20,13 @@ uniform int t;
 uniform float user_seed;
 in vec2 screenp;
 
-Sphere hit_spheres[3];
 float seed;
 
 float rand(vec2 co){
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
+/*
 mat4 rotationMatrix(vec3 axis, float angle)
 {
 	float s = sin(angle);
@@ -57,12 +57,43 @@ vec3 randDirInHem(vec3 norm) {
 
 	return norm * sin(phi) + perp * cos(phi);
 }
+*/
+
+vec3 uniformSampleHemisphere(float u1, float u2)
+{
+    float r = sqrt(1.0 - u1 * u1);
+    float phi = 2 * 3.14159 * u2;
+ 
+    return vec3(cos(phi) * r, sin(phi) * r, u1);
+}
+
+vec3 cosineSampleHemisphere(float u1, float u2)
+{
+    float r = sqrt(u1);
+    float theta = 2 * 3.14159 * u2;
+ 
+    float x = r * cos(theta);
+    float y = r * sin(theta);
+ 
+    return vec3(x, y, sqrt(max(0.0f, 1 - u1)));
+}
+
+vec3 randDirInHem(vec3 norm) {
+    float u1 = rand(norm.xy * seed);
+    float u2 = rand(norm.yz * seed);
+    vec3 dir = cosineSampleHemisphere(u1, u2);
+    if (dot(norm, dir) < 0)
+        dir = -dir;
+    return dir;
+}
 
 vec3 projectRay(vec3 pos, vec3 dir, int maxDist, int maxDepth) {
 	int layersFilled = 0;
+	int hit_spheres[4];
+	
 	while (maxDepth > 0) {
 		float minT = 1000000;
-		Sphere minS;
+		int minS;
 		for (int i = 0; i < numspheres; i++) {
 			// Ray/Sphere intersection
 			Sphere s = sphere_list[i];
@@ -77,17 +108,16 @@ vec3 projectRay(vec3 pos, vec3 dir, int maxDist, int maxDepth) {
 			float t = t0;
 			if (t0 < 0)
 				t = t1;
-			if (t1 < 0) continue;
-			if (t < minT) {
+			if (t < minT && t >= 0) {
 				minT = t;
-				minS = s;
+				minS = i;
 			}
 		}
 		if (minT < maxDist) {
 			hit_spheres[layersFilled] = minS;
 			pos = pos + dir * minT;
-			vec3 norm = normalize(pos - minS.pos);
-			pos = minS.pos + norm * minS.rad;
+			vec3 norm = (pos - sphere_list[minS].pos) / sphere_list[minS].rad;
+			pos = sphere_list[minS].pos + norm * sphere_list[minS].rad;
 			dir = randDirInHem(norm);
 			layersFilled++;
 			maxDepth--;
@@ -96,11 +126,8 @@ vec3 projectRay(vec3 pos, vec3 dir, int maxDist, int maxDepth) {
 	}
 	vec3 color = vec3(0,0,0);
 	while (--layersFilled >= 0) {
-		vec3 newc = hit_spheres[layersFilled].color;
-		float l = hit_spheres[layersFilled].light_emit;
-		color = vec3(color.r * newc.r + newc.r * l,
-		             color.g * newc.g + newc.g * l,
-		             color.b * newc.b + newc.b * l);
+		Sphere s = sphere_list[hit_spheres[layersFilled]];
+		color = s.color * (color + s.light_emit);
 	}
 	return color;
 }
@@ -109,10 +136,10 @@ void main() {
 	vec3 pos = vec3(0,0,0);
 	vec3 dir = normalize(vec3(screenp.x * whratio, screenp.y, 1));
 	seed = user_seed;
-	color = projectRay(pos, dir, 100, 3);
-	for (int i = 0; i < 10; i++) {
+	color = projectRay(pos, dir, 100, 4);
+	for (int i = 0; i < 20; i++) {
 		seed += .1;
-		color += projectRay(pos, dir, 100, 3);
+		color += projectRay(pos, dir, 100, 4);
 	}
-	color /= 11;
+	color /= 21;
 }

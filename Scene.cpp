@@ -7,10 +7,10 @@
 #include "math.h"
 
 
-/*
- *  *------*
- *  |  __/ |   O   O
- *  |_/    |     | 
+/*                    ,-------------------------------------,
+ *  *------*   ^   ^  ( This polygon fills the whole screen! ) 
+ *  |  __/ |   O   O   \ ,----------------------------------/
+ *  |_/    |    _L_   _|/
  *  *------*   \___/
  */
 float frameShape[18] =
@@ -68,34 +68,53 @@ void Scene::setupGL() {
 
     s.x = 1;
     s.y = 1;
-    s.z = 2;
-    s.r = 0;
-    s.g = 1;
-    s.b = 0;
-    s.rad = .5;
+    s.z = 1.5;
+    s.r = .8;
+    s.g = .5;
+    s.b = .5;
+    s.rad = .2;
     s.light_emit = 1;
     spheres_->push_back(s);
 
     s.x = 0;
     s.y = -20;
     s.z = 3;
-    s.r = 1;
-    s.g = 1;
-    s.b = 1;
+    s.r = .5;
+    s.g = .5;
+    s.b = .5;
     s.rad = 18;
     s.light_emit = 0;
     spheres_->push_back(s);
 
-    s.x = 0;
-    s.y = 10;
+    s.x = -5;
+    s.y = 120;
     s.z = 5;
-    s.r = 1;
-    s.g = .2;
-    s.b = 0;
-    s.rad = 4;
-    s.light_emit = 1;
+    s.r = .5;
+    s.g = .5;
+    s.b = .8;
+    s.rad = 114;
+    s.light_emit = .3;
     spheres_->push_back(s);
 
+    s.x = .7;
+    s.y = .1;
+    s.z = 2;
+    s.r = 1;
+    s.g = 1;
+    s.b = 1;
+    s.rad = .2;
+    s.light_emit = 0;
+    spheres_->push_back(s);
+
+    s.x = -1;
+    s.y = -1;
+    s.z = 3;
+    s.r = .4;
+    s.g = .3;
+    s.b = .2;
+    s.rad = .2;
+    s.light_emit = 5;
+    spheres_->push_back(s);
 
 }
 
@@ -124,10 +143,14 @@ void Scene::drawGL() {
     glUniform1i(t, ++t_);
 
     GLuint seed = glGetUniformLocation(shader_, "user_seed");
-    glUniform1f(seed, static_cast<float> (rand()) / static_cast<float> (RAND_MAX));
+    float rand_val = static_cast<float> (rand()) / static_cast<float> (RAND_MAX);
+    while (rand_val < .2 && rand_val > -.2)
+	rand_val = static_cast<float> (rand()) / static_cast<float> (RAND_MAX);
+    glUniform1f(seed, rand_val);
 
 
-    (*spheres_)[1].y = sin(((float) t_) / 50.0);
+    (*spheres_)[1].y = sin(((float) t_) / 20.0);
+    (*spheres_)[0].x = sin(((float) t_) / 45.6) * .5;
     updateGL();
 
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
